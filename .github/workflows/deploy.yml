@@ -2,31 +2,33 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main] # 当推送到 main 分支时触发
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: 'pnpm' # ✅ 改为pnpm缓存
+          cache-dependency-path: pnpm-lock.yaml # 明确指定锁定文件路径
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile # ✅ PNPM等价于npm ci，严格安装锁定版本
 
       - name: Build project
-        run: pnpm run build
+        run: pnpm run build # ✅ 统一使用pnpm命令
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          cname: whjin.com # 自动设置你的自定义域名
+          keep_files: false # 每次部署完全覆盖旧文件
