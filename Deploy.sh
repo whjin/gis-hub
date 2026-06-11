@@ -40,9 +40,6 @@ fi
 
 echo "正在提交代码..."
 git pull
-
-npm run build
-
 git add .
 
 # 4. 判断内容是否为空，若为空则使用默认提交信息
@@ -54,6 +51,7 @@ fi
 
 git push 
 
+npm run build
 npm run deploy
 
 echo "按任意键关闭"
