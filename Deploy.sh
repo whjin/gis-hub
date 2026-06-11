@@ -51,8 +51,8 @@ fi
 
 git push 
 
-npm run build
-npm run deploy
+# npm run build
+# npm run deploy
 
 echo "按任意键关闭"
 read -n 1
