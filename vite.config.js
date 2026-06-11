@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { fileUrlToPath } from 'url';
+import { fileUrlToPath, URL } from 'node:url';
 
 export default defineConfig(({ mode }) => {
   return {
