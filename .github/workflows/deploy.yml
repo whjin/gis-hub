@@ -12,18 +12,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      # 第一步：先设置 Node.js 并启用 Corepack（官方推荐）
-      - name: Setup Node.js with Corepack
+      - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: '24.16.0'
-          corepack: true # 启用 Node.js 内置的包管理器工具
 
-      # 第二步：通过 Corepack 安装 PNPM（无需第三方插件）
-      - name: Install PNPM via Corepack
-        run: corepack prepare pnpm@11.6.0 --activate
+      # ✅ 最可靠的方式：用npm全局安装pnpm并手动添加路径
+      - name: Install PNPM globally
+        run: |
+          npm install -g pnpm@11.6.0
+          echo "PATH=$(npm prefix -g)/bin:$PATH" >> $GITHUB_ENV
 
-      # 第三步：启用 PNPM 缓存（此时 pnpm 已存在）
+      # ✅ 验证pnpm是否可用（必加，确保路径生效）
+      - name: Verify PNPM installation
+        run: |
+          pnpm --version
+          echo "PNPM path: $(which pnpm)"
+
+      # ✅ 手动配置pnpm缓存（避免setup-node的缓存问题）
       - name: Setup PNPM cache
         uses: actions/cache@v4
         with:
