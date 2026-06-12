@@ -8,6 +8,9 @@ on:
 # 全局环境变量：强制所有Action使用Node.js 24
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # 显式指定pnpm路径（可选，增强稳定性）
+  PNPM_HOME: ~/pnpm
+  PATH: ~/pnpm:$PATH
 
 jobs:
   build-and-deploy:
@@ -21,12 +24,21 @@ jobs:
         with:
           node-version: '24.16.0'
           cache: 'pnpm'
+          # 启用corepack（Node.js 16+内置，可管理pnpm/yarn）
+          corepack: true
 
       - name: Install PNPM
-        uses: pnpm/action-setup@v5 # ✅ 升级到v5，原生支持Node.js 24
+        uses: pnpm/action-setup@v5
         with:
           version: 11.6.0
           run_install: false
+          # 显式指定安装目录（与全局PNPM_HOME一致）
+          dest: ~/pnpm
+
+      - name: 验证pnpm安装（调试用，可选）
+        run: |
+          pnpm --version # 输出版本号则说明安装成功
+          echo "PNPM路径: $(which pnpm)"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -39,6 +51,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-          cname: wuhuajin.com # 你的自定义域名
+          cname: wuhuajin.com
           keep_files: false
-          force_orphan: true # 强制创建孤儿分支，避免历史冲突
+          force_orphan: true
