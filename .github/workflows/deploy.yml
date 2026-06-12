@@ -1,34 +1,38 @@
-name: Deploy Node.js Project
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main # 按需修改分支名
-
-# 可选：全局设置环境变量，强制使用 Node.js 24
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest # 按需切换 windows-latest/macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # 升级到支持 Node.js 24 的版本
+        uses: actions/checkout@v5 # ✅ 升级到原生支持Node.js 24的版本
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4 # 升级到支持 Node.js 24 的版本
+      - name: Setup Node.js
+        uses: actions/setup-node@v5 # ✅ 升级到原生支持Node.js 24的版本
         with:
-          node-version: '24.16.0' # 保持 Node.js 版本不变（已适配 Node.js 24）
+          node-version: '24.16.0'
 
-      - name: Set up pnpm
-        run: npm install -g pnpm@11.6.0 # 安装指定版本的pnpm
+      - name: Install PNPM
+        uses: pnpm/action-setup@v4 # ✅ 官方推荐的pnpm安装方式，比npm install更高效
+        with:
+          version: 11.6.0
+          run_install: false
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile # 锁定依赖版本
+        run: pnpm install --frozen-lockfile
 
       - name: Build project
-        run: pnpm run build # 项目构建命令
+        run: pnpm run build
 
-      - name: Deploy to server or another step
-        run: echo "Deploying to server..." # 替换为实际部署命令（SSH/FTP等）
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          cname: wuhuajin.com # 自动设置你的自定义域名
+          keep_files: false
