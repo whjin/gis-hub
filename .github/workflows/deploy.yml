@@ -2,15 +2,8 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
-
-# 全局环境变量：强制所有Action使用Node.js 24
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # 显式指定pnpm路径（可选，增强稳定性）
-  PNPM_HOME: ~/pnpm
-  PATH: ~/pnpm:$PATH
 
 jobs:
   build-and-deploy:
@@ -19,26 +12,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup Node.js
+      # 第一步：先设置 Node.js 并启用 Corepack（官方推荐）
+      - name: Setup Node.js with Corepack
         uses: actions/setup-node@v5
         with:
           node-version: '24.16.0'
-          cache: 'pnpm'
-          # 启用corepack（Node.js 16+内置，可管理pnpm/yarn）
-          corepack: true
+          corepack: true # 启用 Node.js 内置的包管理器工具
 
-      - name: Install PNPM
-        uses: pnpm/action-setup@v5
+      # 第二步：通过 Corepack 安装 PNPM（无需第三方插件）
+      - name: Install PNPM via Corepack
+        run: corepack prepare pnpm@11.6.0 --activate
+
+      # 第三步：启用 PNPM 缓存（此时 pnpm 已存在）
+      - name: Setup PNPM cache
+        uses: actions/cache@v4
         with:
-          version: 11.6.0
-          run_install: false
-          # 显式指定安装目录（与全局PNPM_HOME一致）
-          dest: ~/pnpm
-
-      - name: 验证pnpm安装（调试用，可选）
-        run: |
-          pnpm --version # 输出版本号则说明安装成功
-          echo "PNPM路径: $(which pnpm)"
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
