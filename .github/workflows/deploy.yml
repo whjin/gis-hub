@@ -5,20 +5,25 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# 全局环境变量：强制所有Action使用Node.js 24
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5 # ✅ 升级到原生支持Node.js 24的版本
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5 # ✅ 升级到原生支持Node.js 24的版本
+        uses: actions/setup-node@v5
         with:
           node-version: '24.16.0'
+          cache: 'pnpm'
 
       - name: Install PNPM
-        uses: pnpm/action-setup@v4 # ✅ 官方推荐的pnpm安装方式，比npm install更高效
+        uses: pnpm/action-setup@v5 # ✅ 升级到v5，原生支持Node.js 24
         with:
           version: 11.6.0
           run_install: false
@@ -34,5 +39,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-          cname: wuhuajin.com # 自动设置你的自定义域名
+          cname: wuhuajin.com # 你的自定义域名
           keep_files: false
+          force_orphan: true # 强制创建孤儿分支，避免历史冲突
