@@ -42,3 +42,6 @@ function animate() {
 }
 
 animate();
+
+const gridHelper = new THREE.GridHelper(50, 10);
+scene.add(gridHelper);
