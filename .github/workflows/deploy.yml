@@ -2,8 +2,13 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
+
+# 全局环境变量
+env:
+  NODE_VERSION: 24
+  PNPM_VERSION: 9
 
 jobs:
   deploy:
@@ -12,23 +17,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 1. 先安装 PNPM（关键步骤，之前缺失）
+      - name: Install PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      # 2. 升级到 Node.js 24（解决弃用警告）
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'pnpm' # ✅ 改为pnpm缓存
-          cache-dependency-path: pnpm-lock.yaml # 明确指定锁定文件路径
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'  # 现在可以正常使用pnpm缓存
 
+      # 3. 安装依赖（严格模式）
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile # ✅ PNPM等价于npm ci，严格安装锁定版本
+        run: pnpm install --frozen-lockfile
 
+      # 4. 构建项目
       - name: Build project
-        run: pnpm run build # ✅ 统一使用pnpm命令
+        run: pnpm run build
 
+      # 5. 部署到 GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-          cname: whjin.com # 自动设置你的自定义域名
-          keep_files: false # 每次部署完全覆盖旧文件
+          cname: whjin.com  # 自动设置你的自定义域名
+          keep_files: false  # 完全覆盖旧文件，避免残留
