@@ -3,30 +3,32 @@ name: Deploy Node.js Project
 on:
   push:
     branches:
-      - main # 你可以根据需要修改分支名
+      - main # 按需修改分支名
+
+# 可选：全局设置环境变量，强制使用 Node.js 24
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest # 或者使用 windows-latest, macos-latest 根据你的需求
-
+    runs-on: ubuntu-latest # 按需切换 windows-latest/macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4 # 升级到支持 Node.js 24 的版本
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4 # 升级到支持 Node.js 24 的版本
         with:
-          node-version: '24.16.0' # 设置Node.js版本
+          node-version: '24.16.0' # 保持 Node.js 版本不变（已适配 Node.js 24）
 
       - name: Set up pnpm
         run: npm install -g pnpm@11.6.0 # 安装指定版本的pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile # 使用pnpm安装依赖，确保使用pnpm-lock.yaml文件
+        run: pnpm install --frozen-lockfile # 锁定依赖版本
 
       - name: Build project
-        run: pnpm run build # 假设你的构建命令是pnpm run build
+        run: pnpm run build # 项目构建命令
 
       - name: Deploy to server or another step
-        # 这里可以添加部署的步骤，例如使用SSH部署、FTP上传等
-        run: echo "Deploying to server..." # 示例命令，根据实际情况修改
+        run: echo "Deploying to server..." # 替换为实际部署命令（SSH/FTP等）
